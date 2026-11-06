@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FerreMax — Ferretería Online + Admin</title>
+<style>
+  :root{
+    --naranja:#f26a1b;--naranja-osc:#d9550c;--azul:#123a5e;--azul-cl:#1d5480;
+    --gris:#6b7280;--gris-cl:#f4f5f7;--borde:#e4e7eb;--verde:#188a4a;--rojo:#e23b3b;--amar:#d98b0c;
+    --texto:#1b2430;--sombra:0 1px 3px rgba(16,24,40,.08),0 1px 2px rgba(16,24,40,.06);
+    --sombra-lg:0 12px 32px rgba(16,24,40,.16);--radio:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;color:var(--texto);background:#fbfbfc;line-height:1.45}
+  img{max-width:100%;display:block}
+  button{font-family:inherit;cursor:pointer;border:none;background:none}
+  a{color:inherit;text-decoration:none}
+  .hidden{display:none!important}
+
+  /* ===== Top bar ===== */
+  .topbar{background:var(--azul);color:#cdd8e3;font-size:13px}
+  .topbar .wrap{max-width:1240px;margin:0 auto;padding:7px 20px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .topbar b{color:#fff}
+  .topbar .modo{background:rgba(255,255,255,.12);border-radius:20px;padding:3px 12px;font-weight:600;color:#fff}
+  .topbar .modo:hover{background:var(--naranja)}
+
+  /* ===== Header ===== */
+  header{background:#fff;border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:40}
+  .head{max-width:1240px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:22px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:24px;color:var(--azul);white-space:nowrap}
+  .logo .mark{width:40px;height:40px;border-radius:10px;background:var(--naranja);display:grid;place-items:center;color:#fff;font-size:22px;box-shadow:var(--sombra)}
+  .logo span{color:var(--naranja)}
+  .search{flex:1;display:flex;max-width:620px}
+  .search input{flex:1;border:2px solid var(--borde);border-right:none;border-radius:10px 0 0 10px;padding:12px 16px;font-size:15px;outline:none}
+  .search input:focus{border-color:var(--naranja)}
+  .search button{background:var(--naranja);color:#fff;padding:0 22px;border-radius:0 10px 10px 0;font-size:18px;font-weight:600}
+  .search button:hover{background:var(--naranja-osc)}
+  .head-actions{display:flex;align-items:center;gap:20px}
+  .icon-btn{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--gris);position:relative}
+  .icon-btn .ic{font-size:22px}
+  .icon-btn:hover{color:var(--naranja)}
+  .badge{position:absolute;top:-6px;right:-10px;background:var(--naranja);color:#fff;font-size:11px;font-weight:700;min-width:19px;height:19px;border-radius:10px;display:grid;place-items:center;padding:0 4px}
+
+  nav.cats{background:#fff;border-bottom:1px solid var(--borde)}
+  .cats-wrap{max-width:1240px;margin:0 auto;padding:0 20px;display:flex;gap:4px;overflow-x:auto}
+  .cats-wrap button{padding:13px 16px;font-size:14.5px;font-weight:600;color:#41505f;border-bottom:3px solid transparent;white-space:nowrap}
+  .cats-wrap button:hover{color:var(--naranja)}
+  .cats-wrap button.active{color:var(--naranja);border-bottom-color:var(--naranja)}
+
+  .hero{max-width:1240px;margin:22px auto 0;padding:0 20px}
+  .hero-in{background:linear-gradient(110deg,var(--azul),var(--azul-cl));border-radius:16px;padding:40px 44px;color:#fff;position:relative;overflow:hidden}
+  .hero-in::after{content:"🛠️";position:absolute;right:30px;top:20px;font-size:150px;opacity:.13;transform:rotate(-15deg)}
+  .hero h1{font-size:32px;margin-bottom:10px;line-height:1.2}
+  .hero p{opacity:.9;font-size:16px;margin-bottom:18px;max-width:440px}
+  .hero .cta{background:var(--naranja);color:#fff;padding:13px 26px;border-radius:10px;font-weight:700;font-size:15px;display:inline-block}
+  .hero .cta:hover{background:var(--naranja-osc)}
+  .tag{display:inline-block;background:rgba(255,255,255,.16);padding:5px 12px;border-radius:20px;font-size:13px;margin-bottom:14px}
+
+  main{max-width:1240px;margin:0 auto;padding:8px 20px 60px}
+  .sec-head{display:flex;justify-content:space-between;align-items:baseline;margin:34px 0 16px}
+  .sec-head h2{font-size:22px;color:var(--azul)}
+  .sec-head .count{color:var(--gris);font-size:14px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+  .chip{background:#fff;border:1.5px solid var(--borde);border-radius:20px;padding:7px 15px;font-size:13.5px;font-weight:600;color:#41505f}
+  .chip:hover{border-color:var(--naranja);color:var(--naranja)}
+  .chip.active{background:var(--naranja);border-color:var(--naranja);color:#fff}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:18px}
+  .card{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);overflow:hidden;display:flex;flex-direction:column;transition:.18s;position:relative}
+  .card:hover{box-shadow:var(--sombra-lg);transform:translateY(-3px)}
+  .card .thumb{height:150px;display:grid;place-items:center;font-size:64px;background:var(--gris-cl)}
+  .card .flag{position:absolute;top:10px;left:10px;background:var(--verde);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px}
+  .card .flag.of{background:var(--rojo)}
+  .card .body{padding:13px 14px 16px;display:flex;flex-direction:column;flex:1}
+  .card .marca{font-size:11.5px;color:var(--gris);text-transform:uppercase;letter-spacing:.4px;font-weight:700}
+  .card .name{font-size:14.5px;font-weight:600;margin:3px 0 7px;min-height:40px}
+  .card .stars{font-size:12px;color:#f5a623;margin-bottom:8px}
+  .card .stars small{color:var(--gris);margin-left:4px}
+  .card .price-row{display:flex;align-items:baseline;gap:8px;margin-top:auto}
+  .card .price{font-size:20px;font-weight:800;color:var(--azul)}
+  .card .old{font-size:13px;color:var(--gris);text-decoration:line-through}
+  .card .stock{font-size:12px;font-weight:600;margin:6px 0 11px}
+  .card .stock.ok{color:var(--verde)}
+  .card .stock.low{color:var(--amar)}
+  .card .stock.out{color:var(--rojo)}
+  .card .add{background:var(--naranja);color:#fff;padding:10px;border-radius:9px;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:7px}
+  .card .add:hover{background:var(--naranja-osc)}
+  .card .add.done{background:var(--verde)}
+  .card .add.dis{background:#c9ced6;cursor:not-allowed}
+
+  .perks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:38px 0 6px}
+  .perk{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:18px 20px;display:flex;gap:14px;align-items:center}
+  .perk .pic{font-size:30px}
+  .perk b{display:block;font-size:15px;color:var(--azul)}
+  .perk small{color:var(--gris);font-size:13px}
+
+  footer{background:var(--azul);color:#b9c6d3;margin-top:50px}
+  .foot{max-width:1240px;margin:0 auto;padding:40px 20px 26px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:30px}
+  .foot h4{color:#fff;font-size:15px;margin-bottom:12px}
+  .foot a{display:block;color:#b9c6d3;font-size:13.5px;padding:4px 0}
+  .foot a:hover{color:var(--naranja)}
+  .foot .logo{color:#fff;font-size:20px;margin-bottom:12px}
+  .foot p{font-size:13.5px;line-height:1.6}
+  .copy{border-top:1px solid rgba(255,255,255,.12);text-align:center;padding:16px;font-size:13px;color:#8fa0b2}
+
+  /* ===== Carrito drawer ===== */
+  .overlay{position:fixed;inset:0;background:rgba(16,24,40,.5);opacity:0;visibility:hidden;transition:.25s;z-index:60}
+  .overlay.open{opacity:1;visibility:visible}
+  .cart{position:fixed;top:0;right:0;width:400px;max-width:92vw;height:100%;background:#fff;z-index:70;transform:translateX(100%);transition:.28s;display:flex;flex-direction:column;box-shadow:var(--sombra-lg)}
+  .cart.open{transform:translateX(0)}
+  .cart-head{padding:20px;border-bottom:1px solid var(--borde);display:flex;justify-content:space-between;align-items:center}
+  .cart-head h3{font-size:19px;color:var(--azul)}
+  .cart-head .x{font-size:26px;color:var(--gris);line-height:1}
+  .cart-body{flex:1;overflow-y:auto;padding:8px 20px}
+  .empty{text-align:center;color:var(--gris);padding:60px 20px}
+  .empty .big{font-size:56px;margin-bottom:12px;opacity:.4}
+  .ci{display:flex;gap:13px;padding:15px 0;border-bottom:1px solid var(--borde)}
+  .ci .im{width:58px;height:58px;border-radius:9px;background:var(--gris-cl);display:grid;place-items:center;font-size:30px;flex-shrink:0}
+  .ci .info{flex:1;min-width:0}
+  .ci .info b{font-size:14px;font-weight:600;display:block}
+  .ci .info .pu{font-size:12.5px;color:var(--gris)}
+  .ci .qty{display:flex;align-items:center;gap:8px;margin-top:7px}
+  .ci .qty button{width:26px;height:26px;border:1px solid var(--borde);border-radius:6px;font-size:16px;font-weight:700;color:var(--azul);display:grid;place-items:center}
+  .ci .qty button:hover{border-color:var(--naranja);color:var(--naranja)}
+  .ci .qty span{min-width:22px;text-align:center;font-weight:600}
+  .ci .right{text-align:right;display:flex;flex-direction:column;justify-content:space-between}
+  .ci .right b{font-size:15px;color:var(--azul)}
+  .ci .right .del{font-size:12px;color:var(--rojo)}
+  .ci .right .del:hover{text-decoration:underline}
+  .cart-foot{border-top:1px solid var(--borde);padding:18px 20px 22px}
+  .line{display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px;color:#41505f}
+  .line.tot{font-size:19px;font-weight:800;color:var(--azul);margin:12px 0 16px}
+  .btn-pay{width:100%;background:var(--naranja);color:#fff;padding:15px;border-radius:11px;font-weight:800;font-size:16px}
+  .btn-pay:hover{background:var(--naranja-osc)}
+  .btn-cont{width:100%;text-align:center;padding:11px;color:var(--gris);font-size:13.5px;font-weight:600}
+
+  /* ===== ADMIN ===== */
+  .admin{max-width:1240px;margin:0 auto;padding:26px 20px 60px}
+  .admin h2{font-size:24px;color:var(--azul);display:flex;align-items:center;gap:10px}
+  .admin .sub{color:var(--gris);font-size:14px;margin:4px 0 22px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:26px}
+  .kpi{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:18px 20px}
+  .kpi .n{font-size:28px;font-weight:800;color:var(--azul)}
+  .kpi .l{font-size:13px;color:var(--gris);font-weight:600;margin-top:2px}
+  .kpi.warn .n{color:var(--amar)}
+  .kpi.dan .n{color:var(--rojo)}
+  .kpi.mon .n{color:var(--verde)}
+
+  .adm-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  .adm-bar input,.adm-bar select{border:1.5px solid var(--borde);border-radius:9px;padding:10px 12px;font-size:14px;outline:none}
+  .adm-bar input:focus,.adm-bar select:focus{border-color:var(--naranja)}
+  .btn-primary{background:var(--naranja);color:#fff;padding:11px 20px;border-radius:9px;font-weight:700;font-size:14.5px;display:inline-flex;align-items:center;gap:7px}
+  .btn-primary:hover{background:var(--naranja-osc)}
+
+  .table-wrap{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);overflow:hidden;overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:14px;min-width:760px}
+  thead th{background:var(--gris-cl);text-align:left;padding:12px 14px;font-size:12.5px;text-transform:uppercase;letter-spacing:.4px;color:#5b6672;font-weight:700;white-space:nowrap}
+  tbody td{padding:12px 14px;border-top:1px solid var(--borde);vertical-align:middle}
+  tbody tr:hover{background:#fafbfc}
+  .tprod{display:flex;align-items:center;gap:10px}
+  .tprod .ti{width:38px;height:38px;border-radius:8px;background:var(--gris-cl);display:grid;place-items:center;font-size:20px;flex-shrink:0}
+  .tprod b{font-size:14px;display:block}
+  .tprod small{color:var(--gris);font-size:12px}
+  .pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+  .pill.ok{background:#e5f4ec;color:var(--verde)}
+  .pill.low{background:#fbf1de;color:var(--amar)}
+  .pill.out{background:#fbe4e4;color:var(--rojo)}
+  .stockcell{font-weight:700;font-size:15px}
+  .rowbtn{border:1px solid var(--borde);border-radius:7px;padding:6px 10px;font-size:13px;font-weight:600;color:#41505f;margin-right:6px}
+  .rowbtn:hover{border-color:var(--naranja);color:var(--naranja)}
+  .rowbtn.del:hover{border-color:var(--rojo);color:var(--rojo)}
+  .catpill{display:inline-block;background:var(--gris-cl);padding:3px 10px;border-radius:20px;font-size:12.5px;font-weight:600;color:#41505f}
+
+  /* Modal form */
+  .modal{position:fixed;inset:0;background:rgba(16,24,40,.55);z-index:80;display:grid;place-items:center;padding:20px;opacity:0;visibility:hidden;transition:.2s}
+  .modal.open{opacity:1;visibility:visible}
+  .modal .box{background:#fff;border-radius:16px;width:560px;max-width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--sombra-lg)}
+  .modal .mh{padding:20px 24px;border-bottom:1px solid var(--borde);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff}
+  .modal .mh h3{font-size:19px;color:var(--azul)}
+  .modal .mh .x{font-size:26px;color:var(--gris);line-height:1}
+  .modal form{padding:22px 24px 8px}
+  .fld{margin-bottom:16px}
+  .fld label{display:block;font-size:13px;font-weight:700;color:#41505f;margin-bottom:6px}
+  .fld input,.fld select,.fld textarea{width:100%;border:1.5px solid var(--borde);border-radius:9px;padding:11px 12px;font-size:14.5px;outline:none;font-family:inherit}
+  .fld input:focus,.fld select:focus{border-color:var(--naranja)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  .hint{font-size:12px;color:var(--gris);margin-top:5px}
+  .checks{display:flex;gap:22px;margin-bottom:10px}
+  .checks label{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:#41505f;cursor:pointer}
+  .mf{padding:16px 24px 22px;border-top:1px solid var(--borde);display:flex;gap:12px;justify-content:flex-end;position:sticky;bottom:0;background:#fff}
+  .btn-ghost{padding:11px 18px;border-radius:9px;font-weight:600;color:var(--gris);border:1px solid var(--borde)}
+  .btn-ghost:hover{background:var(--gris-cl)}
+  .iconpick{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .iconpick button{width:40px;height:40px;border:1.5px solid var(--borde);border-radius:9px;font-size:20px}
+  .iconpick button.sel{border-color:var(--naranja);background:#fff4ec}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--azul);color:#fff;padding:14px 24px;border-radius:11px;font-weight:600;font-size:14.5px;z-index:90;transition:.3s;box-shadow:var(--sombra-lg);display:flex;align-items:center;gap:10px}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:820px){
+    .search{order:3;flex-basis:100%;max-width:none;margin-top:12px}
+    .head{flex-wrap:wrap}
+    .foot{grid-template-columns:1fr 1fr}
+    .hero-in{padding:30px 24px}.hero h1{font-size:24px}
+    .row2,.row3{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <span>🚚 Envío <b>GRATIS</b> en compras sobre $50 · Guayaquil y todo el Ecuador</span>
+    <button class="modo" id="modoBtn" onclick="toggleModo()">🛠️ Ir al panel de administración</button>
+  </div>
+</div>
+
+<header>
+  <div class="head">
+    <a class="logo" href="#" onclick="setModo('tienda');return false"><span class="mark">🔧</span>Ferre<span>Max</span></a>
+    <form class="search" id="searchForm" onsubmit="return doSearch(event)">
+      <input id="q" type="text" placeholder="Busca taladros, tornillos, pintura, cemento...">
+      <button type="submit">🔍</button>
+    </form>
+    <div class="head-actions" id="headActions">
+      <a class="icon-btn" href="#"><span class="ic">👤</span>Mi cuenta</a>
+      <button class="icon-btn" onclick="openCart()">
+        <span class="ic">🛒</span>Carrito
+        <span class="badge" id="badge" style="display:none">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ==================== TIENDA ==================== -->
+<div id="viewTienda">
+  <nav class="cats"><div class="cats-wrap" id="cats"></div></nav>
+
+  <section class="hero">
+    <div class="hero-in">
+      <span class="tag">🔥 Temporada de construcción</span>
+      <h1>Todo para tu obra y tu hogar</h1>
+      <p>Herramientas, materiales y accesorios de las mejores marcas. Precios de mayorista, retiro en tienda o envío a domicilio.</p>
+      <a class="cta" href="#catalogo" onclick="setCat('Ofertas')">Ver ofertas del mes →</a>
+    </div>
+  </section>
+
+  <main id="catalogo">
+    <div class="sec-head">
+      <h2 id="secTitle">Productos destacados</h2>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="grid" id="grid" style="margin-top:14px"></div>
+
+    <div class="perks">
+      <div class="perk"><span class="pic">🚚</span><div><b>Envío a todo el país</b><small>Despacho en 24–48 h</small></div></div>
+      <div class="perk"><span class="pic">🏬</span><div><b>Retiro en tienda</b><small>Listo en 2 horas</small></div></div>
+      <div class="perk"><span class="pic">💳</span><div><b>Paga a plazos</b><small>Hasta 12 cuotas sin interés</small></div></div>
+      <div class="perk"><span class="pic">🛡️</span><div><b>Garantía asegurada</b><small>Productos originales</small></div></div>
+    </div>
+  </main>
+</div>
+
+<!-- ==================== ADMIN ==================== -->
+<div id="viewAdmin" class="hidden">
+  <div class="admin">
+    <h2>📦 Inventario y productos</h2>
+    <div class="sub">Panel de administración · agrega, edita y controla el stock de tu ferretería</div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="adm-bar">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <input id="admSearch" type="text" placeholder="🔍 Buscar producto o marca..." oninput="renderAdmin()" style="min-width:240px">
+        <select id="admCat" onchange="renderAdmin()">
+          <option value="">Todas las categorías</option>
+        </select>
+        <select id="admStock" onchange="renderAdmin()">
+          <option value="">Todo el stock</option>
+          <option value="low">⚠ Bajo stock</option>
+          <option value="out">⛔ Agotado</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="openForm()">＋ Agregar producto</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>SKU</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="admBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="foot">
+    <div>
+      <div class="logo">🔧 FerreMax</div>
+      <p>Tu ferretería de confianza desde 1998. Más de 12.000 productos para construcción, hogar e industria.</p>
+    </div>
+    <div><h4>Categorías</h4><a href="#">Herramientas</a><a href="#">Construcción</a><a href="#">Eléctrico</a><a href="#">Plomería</a><a href="#">Pinturas</a></div>
+    <div><h4>Ayuda</h4><a href="#">Cómo comprar</a><a href="#">Envíos y entregas</a><a href="#">Devoluciones</a><a href="#">Factura electrónica</a></div>
+    <div><h4>Contacto</h4><a href="#">📞 (04) 380-2200</a><a href="#">✉️ ventas@ferremax.ec</a><a href="#">📍 Av. Juan Tanca Marengo, Guayaquil</a></div>
+  </div>
+  <div class="copy">© 2026 FerreMax S.A. · Prototipo de demostración · Todos los derechos reservados</div>
+</footer>
+
+<!-- Carrito -->
+<div class="overlay" id="overlay" onclick="closeCart()"></div>
+<aside class="cart" id="cart">
+  <div class="cart-head"><h3>🛒 Tu carrito</h3><button class="x" onclick="closeCart()">×</button></div>
+  <div class="cart-body" id="cartBody"></div>
+  <div class="cart-foot" id="cartFoot"></div>
+</aside>
+
+<!-- Modal formulario producto -->
+<div class="modal" id="modal">
+  <div class="box">
+    <div class="mh"><h3 id="formTitle">Agregar producto</h3><button class="x" onclick="closeForm()">×</button></div>
+    <form id="prodForm" onsubmit="return saveProduct(event)">
+      <input type="hidden" id="f_id">
+      <div class="fld">
+        <label>Nombre del producto *</label>
+        <input id="f_name" required placeholder="Ej: Taladro percutor inalámbrico 20V">
+      </div>
+      <div class="row2">
+        <div class="fld"><label>Marca *</label><input id="f_marca" required placeholder="Ej: Bosch"></div>
+        <div class="fld"><label>Categoría *</label><select id="f_cat" required></select></div>
+      </div>
+      <div class="row3">
+        <div class="fld"><label>Precio ($) *</label><input id="f_price" type="number" step="0.01" min="0" required placeholder="0.00"></div>
+        <div class="fld"><label>Precio antes ($)</label><input id="f_old" type="number" step="0.01" min="0" placeholder="opcional"></div>
+        <div class="fld"><label>Stock (unidades) *</label><input id="f_stock" type="number" min="0" required placeholder="0"></div>
+      </div>
+      <div class="fld">
+        <label>Alerta de bajo stock (unidades)</label>
+        <input id="f_min" type="number" min="0" value="5">
+        <div class="hint">Si el stock baja de este número, el producto se marca como "Bajo stock".</div>
+      </div>
+      <div class="fld">
+        <label>Ícono / imagen</label>
+        <div class="iconpick" id="iconpick"></div>
+      </div>
+      <div class="checks">
+        <label><input type="checkbox" id="f_dest"> Destacado</label>
+        <label><input type="checkbox" id="f_oferta"> En oferta</label>
+      </div>
+      <div class="mf">
+        <button type="button" class="btn-ghost" onclick="closeForm()">Cancelar</button>
+        <button type="submit" class="btn-primary">💾 Guardar producto</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ======= Datos ======= */
+const CATS = ["Herramientas","Construcción","Eléctrico","Plomería","Pinturas","Tornillería"];
+const NAVCATS = ["Destacados","Ofertas",...CATS];
+const ICONS = ["🔧","🔨","🪛","🔩","⚙️","🧱","🏗️","🔌","💡","⚡","🚰","🚿","🪣","🎨","🖌️","📏","🛒","🔒","🧤","📦","🪚","🧰"];
+
+let PRODUCTS = [
+  {id:1, name:"Taladro percutor inalámbrico 20V", marca:"Bosch", cat:"Herramientas", icon:"🔩", price:139.90, old:169.90, rating:4.8, reviews:212, stock:24, min:5, dest:true, oferta:true},
+  {id:2, name:"Juego de destornilladores 12 pzas", marca:"Stanley", cat:"Herramientas", icon:"🪛", price:18.50, rating:4.6, reviews:88, stock:60, min:10, dest:true},
+  {id:3, name:"Amoladora angular 4½\" 850W", marca:"DeWalt", cat:"Herramientas", icon:"⚙️", price:74.90, old:89.00, rating:4.7, reviews:134, stock:3, min:5, oferta:true},
+  {id:4, name:"Martillo de uña 16 oz mango fibra", marca:"Truper", cat:"Herramientas", icon:"🔨", price:9.99, rating:4.5, reviews:56, stock:40, min:8, dest:true},
+  {id:5, name:"Flexómetro 5 m x 25 mm", marca:"Stanley", cat:"Herramientas", icon:"📏", price:6.75, rating:4.9, reviews:301, stock:120, min:20},
+  {id:6, name:"Cemento Portland gris 50 kg", marca:"Holcim", cat:"Construcción", icon:"🧱", price:8.20, rating:4.7, reviews:410, stock:520, min:100, dest:true},
+  {id:7, name:"Varilla corrugada 12 mm x 9 m", marca:"Adelca", cat:"Construcción", icon:"🏗️", price:11.40, rating:4.6, reviews:77, stock:85, min:30},
+  {id:8, name:"Bloque de hormigón 10x20x40", marca:"Disensa", cat:"Construcción", icon:"🧱", price:0.68, rating:4.4, reviews:45, stock:2000, min:300},
+  {id:9, name:"Carretilla reforzada 90 L", marca:"Truper", cat:"Construcción", icon:"🛒", price:59.90, old:72.00, rating:4.5, reviews:63, stock:0, min:5, oferta:true},
+  {id:10, name:"Cable eléctrico #12 AWG (rollo 100 m)", marca:"Electrocable", cat:"Eléctrico", icon:"🔌", price:42.50, rating:4.8, reviews:129, stock:34, min:10, dest:true},
+  {id:11, name:"Foco LED 12W luz blanca (pack 4)", marca:"Sylvania", cat:"Eléctrico", icon:"💡", price:9.90, old:13.50, rating:4.6, reviews:198, stock:200, min:40, oferta:true},
+  {id:12, name:"Interruptor doble + placa", marca:"Veto", cat:"Eléctrico", icon:"🔘", price:3.40, rating:4.3, reviews:34, stock:150, min:30},
+  {id:13, name:"Breaker termomagnético 2x30A", marca:"Schneider", cat:"Eléctrico", icon:"⚡", price:15.80, rating:4.7, reviews:52, stock:4, min:6},
+  {id:14, name:"Tubería PVC 1/2\" x 6 m", marca:"Plastigama", cat:"Plomería", icon:"🚰", price:4.90, rating:4.5, reviews:71, stock:90, min:20, dest:true},
+  {id:15, name:"Llave de paso metálica 1/2\"", marca:"FV", cat:"Plomería", icon:"🚿", price:7.30, rating:4.6, reviews:40, stock:38, min:10},
+  {id:16, name:"Mezcladora monomando para lavamanos", marca:"FV", cat:"Plomería", icon:"🔧", price:34.90, old:44.90, rating:4.4, reviews:58, stock:12, min:5, oferta:true},
+  {id:17, name:"Pintura látex interior blanco 1 gal", marca:"Pintuco", cat:"Pinturas", icon:"🪣", price:22.90, rating:4.7, reviews:156, stock:64, min:15, dest:true},
+  {id:18, name:"Rodillo antigota 9\" + bandeja", marca:"Wilson", cat:"Pinturas", icon:"🎨", price:5.60, rating:4.5, reviews:44, stock:80, min:20},
+  {id:19, name:"Esmalte anticorrosivo negro 1/4 gal", marca:"Unidas", cat:"Pinturas", icon:"🖌️", price:8.75, old:10.90, rating:4.6, reviews:39, stock:2, min:8, oferta:true},
+  {id:20, name:"Tornillo autoperforante 1\" (caja 500)", marca:"Tornico", cat:"Tornillería", icon:"🔩", price:12.40, rating:4.8, reviews:97, stock:110, min:25, dest:true},
+  {id:21, name:"Set de tacos + tornillos 200 pzas", marca:"Fischer", cat:"Tornillería", icon:"📦", price:14.90, rating:4.7, reviews:61, stock:47, min:10},
+  {id:22, name:"Candado de seguridad 50 mm", marca:"Yale", cat:"Tornillería", icon:"🔒", price:11.20, rating:4.5, reviews:73, stock:29, min:8},
+];
+
+let cart = {};          // id -> qty
+let currentCat = "Destacados";
+let seq = 100;          // para nuevos IDs
+let pickedIcon = ICONS[0];
+
+/* ======= Utilidades stock ======= */
+function stockState(p){
+  if(p.stock<=0) return "out";
+  if(p.stock<=(p.min||5)) return "low";
+  return "ok";
+}
+function stockLabel(p){
+  const s=stockState(p);
+  if(s==="out") return "Agotado";
+  if(s==="low") return "¡Últimas "+p.stock+"!";
+  return "En stock ("+p.stock+")";
+}
+
+/* ======= Modo tienda / admin ======= */
+function setModo(m){
+  const tienda = m==="tienda";
+  document.getElementById('viewTienda').classList.toggle('hidden', !tienda);
+  document.getElementById('viewAdmin').classList.toggle('hidden', tienda);
+  document.getElementById('headActions').style.visibility = tienda?'visible':'hidden';
+  document.getElementById('searchForm').style.visibility = tienda?'visible':'hidden';
+  document.getElementById('modoBtn').textContent = tienda ? '🛠️ Ir al panel de administración' : '🏬 Volver a la tienda';
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(!tienda) renderAdmin();
+}
+function toggleModo(){
+  const enAdmin = !document.getElementById('viewAdmin').classList.contains('hidden');
+  setModo(enAdmin?'tienda':'admin');
+}
+
+/* ======= Tienda: categorías ======= */
+function renderCats(){
+  document.getElementById('cats').innerHTML = NAVCATS.map(c =>
+    `<button class="${c===currentCat?'active':''}" onclick="setCat('${c}')">${c}</button>`).join('');
+  document.getElementById('chips').innerHTML = NAVCATS.map(c =>
+    `<button class="chip ${c===currentCat?'active':''}" onclick="setCat('${c}')">${c}</button>`).join('');
+}
+function setCat(c){
+  currentCat=c; document.getElementById('q').value='';
+  renderCats(); renderGrid();
+  document.getElementById('catalogo').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function filtered(){
+  const q=document.getElementById('q').value.trim().toLowerCase();
+  if(q) return PRODUCTS.filter(p=>(p.name+' '+p.marca+' '+p.cat).toLowerCase().includes(q));
+  if(currentCat==="Destacados") return PRODUCTS.filter(p=>p.dest);
+  if(currentCat==="Ofertas") return PRODUCTS.filter(p=>p.oferta);
+  return PRODUCTS.filter(p=>p.cat===currentCat);
+}
+function stars(r){const f=Math.round(r);return "★".repeat(f)+"☆".repeat(5-f);}
+
+function renderGrid(){
+  const list=filtered();
+  const q=document.getElementById('q').value.trim();
+  document.getElementById('secTitle').textContent =
+    q?`Resultados para "${q}"`:(currentCat==="Destacados"?"Productos destacados":currentCat);
+  document.getElementById('count').textContent=`${list.length} producto${list.length!==1?'s':''}`;
+  const grid=document.getElementById('grid');
+  if(list.length===0){grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;color:#6b7280;padding:50px">😕 No hay productos aquí.</div>`;return;}
+  grid.innerHTML=list.map(p=>{
+    const off=p.old?Math.round((1-p.price/p.old)*100):0;
+    const st=stockState(p); const inCart=cart[p.id];
+    const dis = st==="out";
+    return `<div class="card">
+      ${p.old?`<span class="flag of">-${off}%</span>`:(p.dest?`<span class="flag">Destacado</span>`:'')}
+      <div class="thumb">${p.icon}</div>
+      <div class="body">
+        <span class="marca">${p.marca}</span>
+        <div class="name">${p.name}</div>
+        <div class="stars">${stars(p.rating)}<small>${p.rating} (${p.reviews})</small></div>
+        <div class="price-row"><span class="price">$${p.price.toFixed(2)}</span>${p.old?`<span class="old">$${p.old.toFixed(2)}</span>`:''}</div>
+        <div class="stock ${st}">${st==="out"?"⛔ ":"✔ "}${stockLabel(p)}</div>
+        <button class="add ${dis?'dis':(inCart?'done':'')}" ${dis?'disabled':''} onclick="addToCart(${p.id})">
+          ${dis?'Sin stock':(inCart?`✓ Agregado (${inCart})`:'🛒 Agregar')}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function doSearch(e){e.preventDefault();currentCat="";renderCats();renderGrid();document.getElementById('catalogo').scrollIntoView({behavior:'smooth',block:'start'});return false;}
+
+/* ======= Carrito (respeta stock) ======= */
+function addToCart(id){
+  const p=PRODUCTS.find(x=>x.id===id);
+  const enCarrito=cart[id]||0;
+  if(p.stock<=enCarrito){showToast(`⛔ No hay más stock de ${p.name}`);return;}
+  cart[id]=enCarrito+1; updateBadge(); renderGrid(); renderCart();
+  showToast(`✓ ${p.name} agregado al carrito`);
+}
+function changeQty(id,d){
+  const p=PRODUCTS.find(x=>x.id==id);
+  if(d>0 && (cart[id]||0)>=p.stock){showToast(`⛔ Solo hay ${p.stock} unidades`);return;}
+  cart[id]=(cart[id]||0)+d; if(cart[id]<=0)delete cart[id];
+  updateBadge(); renderCart(); renderGrid();
+}
+function removeItem(id){delete cart[id];updateBadge();renderCart();renderGrid();}
+function totals(){
+  let sub=0,n=0;
+  for(const id in cart){const p=PRODUCTS.find(x=>x.id==id);sub+=p.price*cart[id];n+=cart[id];}
+  const envio=sub>=50||sub===0?0:4.50; const iva=sub*0.15;
+  return {sub,envio,iva,total:sub+envio+iva,n};
+}
+function updateBadge(){const {n}=totals();const b=document.getElementById('badge');b.textContent=n;b.style.display=n>0?'grid':'none';}
+function renderCart(){
+  const body=document.getElementById('cartBody'),foot=document.getElementById('cartFoot');
+  const ids=Object.keys(cart);
+  if(ids.length===0){
+    body.innerHTML=`<div class="empty"><div class="big">🛒</div>Tu carrito está vacío<br><small>Agrega productos para continuar</small></div>`;
+    foot.innerHTML=`<button class="btn-cont" onclick="closeCart()">Seguir comprando</button>`;return;
+  }
+  body.innerHTML=ids.map(id=>{
+    const p=PRODUCTS.find(x=>x.id==id);const q=cart[id];
+    return `<div class="ci"><div class="im">${p.icon}</div>
+      <div class="info"><b>${p.name}</b><div class="pu">${p.marca} · $${p.price.toFixed(2)} c/u</div>
+        <div class="qty"><button onclick="changeQty(${id},-1)">−</button><span>${q}</span><button onclick="changeQty(${id},1)">+</button></div>
+      </div>
+      <div class="right"><b>$${(p.price*q).toFixed(2)}</b><button class="del" onclick="removeItem(${id})">Quitar</button></div>
+    </div>`;}).join('');
+  const t=totals();
+  foot.innerHTML=`
+    <div class="line"><span>Subtotal</span><span>$${t.sub.toFixed(2)}</span></div>
+    <div class="line"><span>Envío</span><span>${t.envio===0?'GRATIS':'$'+t.envio.toFixed(2)}</span></div>
+    <div class="line"><span>IVA (15%)</span><span>$${t.iva.toFixed(2)}</span></div>
+    <div class="line tot"><span>Total</span><span>$${t.total.toFixed(2)}</span></div>
+    <button class="btn-pay" onclick="checkout()">Finalizar compra 🔒</button>
+    <button class="btn-cont" onclick="closeCart()">Seguir comprando</button>`;
+}
+function checkout(){
+  const t=totals();
+  // descuenta inventario
+  for(const id in cart){const p=PRODUCTS.find(x=>x.id==id);p.stock=Math.max(0,p.stock-cart[id]);}
+  showToast(`✅ ¡Pedido confirmado! Total $${t.total.toFixed(2)} — inventario actualizado (demo)`);
+  cart={};updateBadge();renderCart();renderGrid();setTimeout(closeCart,900);
+}
+function openCart(){document.getElementById('cart').classList.add('open');document.getElementById('overlay').classList.add('open');}
+function closeCart(){document.getElementById('cart').classList.remove('open');document.getElementById('overlay').classList.remove('open');}
+
+/* ======= ADMIN: KPIs + tabla ======= */
+function admFiltered(){
+  const q=document.getElementById('admSearch').value.trim().toLowerCase();
+  const cat=document.getElementById('admCat').value;
+  const st=document.getElementById('admStock').value;
+  return PRODUCTS.filter(p=>{
+    if(q && !(p.name+' '+p.marca).toLowerCase().includes(q)) return false;
+    if(cat && p.cat!==cat) return false;
+    if(st && stockState(p)!==st) return false;
+    return true;
+  });
+}
+function renderKpis(){
+  const total=PRODUCTS.length;
+  const low=PRODUCTS.filter(p=>stockState(p)==="low").length;
+  const out=PRODUCTS.filter(p=>stockState(p)==="out").length;
+  const unidades=PRODUCTS.reduce((a,p)=>a+p.stock,0);
+  const valor=PRODUCTS.reduce((a,p)=>a+p.stock*p.price,0);
+  document.getElementById('kpis').innerHTML=`
+    <div class="kpi"><div class="n">${total}</div><div class="l">Productos</div></div>
+    <div class="kpi"><div class="n">${unidades.toLocaleString('es')}</div><div class="l">Unidades en stock</div></div>
+    <div class="kpi mon"><div class="n">$${valor.toLocaleString('es',{minimumFractionDigits:2,maximumFractionDigits:2})}</div><div class="l">Valor del inventario</div></div>
+    <div class="kpi warn"><div class="n">${low}</div><div class="l">⚠ Bajo stock</div></div>
+    <div class="kpi dan"><div class="n">${out}</div><div class="l">⛔ Agotados</div></div>`;
+}
+function renderAdmin(){
+  renderKpis();
+  const catSel=document.getElementById('admCat');
+  if(catSel.options.length<=1) CATS.forEach(c=>catSel.add(new Option(c,c)));
+  const list=admFiltered();
+  const body=document.getElementById('admBody');
+  if(list.length===0){body.innerHTML=`<tr><td colspan="7" style="text-align:center;color:#6b7280;padding:36px">Sin resultados.</td></tr>`;return;}
+  body.innerHTML=list.map(p=>{
+    const st=stockState(p);
+    const pill=st==="out"?`<span class="pill out">Agotado</span>`:st==="low"?`<span class="pill low">Bajo stock</span>`:`<span class="pill ok">Disponible</span>`;
+    return `<tr>
+      <td style="color:#6b7280;font-weight:700">#${String(p.id).padStart(4,'0')}</td>
+      <td><div class="tprod"><div class="ti">${p.icon}</div><div><b>${p.name}</b><small>${p.marca}</small></div></div></td>
+      <td><span class="catpill">${p.cat}</span></td>
+      <td><b>$${p.price.toFixed(2)}</b>${p.old?`<br><small style="color:#6b7280;text-decoration:line-through">$${p.old.toFixed(2)}</small>`:''}</td>
+      <td class="stockcell" style="color:${st==='out'?'var(--rojo)':st==='low'?'var(--amar)':'var(--texto)'}">${p.stock}</td>
+      <td>${pill}</td>
+      <td style="white-space:nowrap">
+        <button class="rowbtn" onclick="openForm(${p.id})">✏ Editar</button>
+        <button class="rowbtn del" onclick="deleteProduct(${p.id})">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+function deleteProduct(id){
+  const p=PRODUCTS.find(x=>x.id===id);
+  PRODUCTS=PRODUCTS.filter(x=>x.id!==id);
+  delete cart[id];
+  renderAdmin();renderGrid();updateBadge();
+  showToast(`🗑 "${p.name}" eliminado`);
+}
+
+/* ======= ADMIN: formulario ======= */
+function renderIconPick(){
+  document.getElementById('iconpick').innerHTML=ICONS.map(ic=>
+    `<button type="button" class="${ic===pickedIcon?'sel':''}" onclick="pickIcon('${ic}')">${ic}</button>`).join('');
+}
+function pickIcon(ic){pickedIcon=ic;renderIconPick();}
+function fillCatSelect(){
+  const s=document.getElementById('f_cat');
+  s.innerHTML=CATS.map(c=>`<option value="${c}">${c}</option>`).join('');
+}
+function openForm(id){
+  fillCatSelect();
+  const f=document.getElementById('prodForm'); f.reset();
+  if(id){
+    const p=PRODUCTS.find(x=>x.id===id);
+    document.getElementById('formTitle').textContent='Editar producto';
+    document.getElementById('f_id').value=p.id;
+    document.getElementById('f_name').value=p.name;
+    document.getElementById('f_marca').value=p.marca;
+    document.getElementById('f_cat').value=p.cat;
+    document.getElementById('f_price').value=p.price;
+    document.getElementById('f_old').value=p.old||'';
+    document.getElementById('f_stock').value=p.stock;
+    document.getElementById('f_min').value=p.min||5;
+    document.getElementById('f_dest').checked=!!p.dest;
+    document.getElementById('f_oferta').checked=!!p.oferta;
+    pickedIcon=p.icon;
+  }else{
+    document.getElementById('formTitle').textContent='Agregar producto';
+    document.getElementById('f_id').value='';
+    document.getElementById('f_min').value=5;
+    pickedIcon=ICONS[0];
+  }
+  renderIconPick();
+  document.getElementById('modal').classList.add('open');
+}
+function closeForm(){document.getElementById('modal').classList.remove('open');}
+function saveProduct(e){
+  e.preventDefault();
+  const id=document.getElementById('f_id').value;
+  const data={
+    name:document.getElementById('f_name').value.trim(),
+    marca:document.getElementById('f_marca').value.trim(),
+    cat:document.getElementById('f_cat').value,
+    price:parseFloat(document.getElementById('f_price').value),
+    old:parseFloat(document.getElementById('f_old').value)||null,
+    stock:parseInt(document.getElementById('f_stock').value),
+    min:parseInt(document.getElementById('f_min').value)||5,
+    dest:document.getElementById('f_dest').checked,
+    oferta:document.getElementById('f_oferta').checked,
+    icon:pickedIcon,
+  };
+  if(id){
+    const p=PRODUCTS.find(x=>x.id==id);
+    Object.assign(p,data);
+    showToast(`✏ "${p.name}" actualizado`);
+  }else{
+    PRODUCTS.push({id:++seq, rating:0, reviews:0, ...data});
+    showToast(`✅ "${data.name}" agregado al inventario`);
+  }
+  closeForm();renderAdmin();renderCats();renderGrid();
+  return false;
+}
+
+/* ======= Toast ======= */
+let toastT;
+function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2300);}
+
+/* ======= Búsqueda en vivo ======= */
+document.getElementById('q').addEventListener('input',()=>{currentCat="";renderGrid();});
+
+/* ======= Init ======= */
+renderCats();renderGrid();renderCart();updateBadge();
+</script>
+</body>
+</html>
